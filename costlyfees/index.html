@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CostlyFees — The True Cost of Everything</title>
+<meta name="description" content="Compare real costs across finance, living, food, education, travel and health. Stop paying hidden fees.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c0c;
+  --surface: #141414;
+  --surface2: #1c1c1c;
+  --border: #262626;
+  --text: #f0f0f0;
+  --text-dim: #666;
+  --text-mid: #999;
+  --accent: #ff4d00;
+  --accent-soft: rgba(255,77,0,0.1);
+  --accent-border: rgba(255,77,0,0.3);
+  --green: #00c896;
+  --yellow: #ffd600;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:999;
+}
+
+.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+/* ── HEADER ── */
+header {
+  padding:20px 0;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  background:rgba(12,12,12,0.95);
+  backdrop-filter:blur(12px);
+  z-index:100;
+}
+
+.header-inner {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.logo {
+  font-family:'Syne', sans-serif;
+  font-size:1.25rem;
+  font-weight:800;
+  color:var(--text);
+  text-decoration:none;
+  letter-spacing:-0.5px;
+}
+
+.logo span { color:var(--accent); }
+
+.header-tag {
+  font-family:'DM Mono', monospace;
+  font-size:0.62rem;
+  letter-spacing:2px;
+  color:var(--text-dim);
+  text-transform:uppercase;
+  border:1px solid var(--border);
+  padding:5px 12px;
+  border-radius:100px;
+}
+
+/* ── HERO ── */
+.hero {
+  padding:100px 0 80px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Big background number */
+.hero-bg-text {
+  position:absolute;
+  top:-20px;
+  right:-40px;
+  font-family:'Syne', sans-serif;
+  font-size:28vw;
+  font-weight:800;
+  color:rgba(255,255,255,0.015);
+  line-height:1;
+  pointer-events:none;
+  user-select:none;
+  letter-spacing:-10px;
+}
+
+.hero-eyebrow {
+  font-family:'DM Mono', monospace;
+  font-size:0.68rem;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:24px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.hero-eyebrow::before {
+  content:'';
+  width:24px;
+  height:1px;
+  background:var(--accent);
+}
+
+h1 {
+  font-family:'Syne', sans-serif;
+  font-size:clamp(3rem, 7vw, 6.5rem);
+  font-weight:800;
+  line-height:0.95;
+  letter-spacing:-3px;
+  margin-bottom:32px;
+  max-width:800px;
+}
+
+h1 .strike {
+  position:relative;
+  color:var(--text-dim);
+}
+
+h1 .strike::after {
+  content:'';
+  position:absolute;
+  left:0;
+  top:50%;
+  width:100%;
+  height:3px;
+  background:var(--accent);
+  transform:translateY(-50%) rotate(-2deg);
+}
+
+h1 .real { color:var(--accent); }
+
+.hero-desc {
+  font-size:1.15rem;
+  color:var(--text-mid);
+  line-height:1.7;
+  max-width:540px;
+  margin-bottom:48px;
+  font-weight:400;
+}
+
+.hero-actions {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+
+.btn-primary {
+  background:var(--accent);
+  color:#fff;
+  padding:14px 28px;
+  border-radius:8px;
+  font-family:'Syne', sans-serif;
+  font-weight:700;
+  font-size:0.95rem;
+  text-decoration:none;
+  letter-spacing:-0.2px;
+  transition:transform 0.15s, box-shadow 0.15s;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+.btn-primary:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(255,77,0,0.3);
+}
+
+.btn-ghost {
+  color:var(--text-mid);
+  padding:14px 28px;
+  border-radius:8px;
+  font-family:'DM Mono', monospace;
+  font-size:0.78rem;
+  text-decoration:none;
+  letter-spacing:1px;
+  border:1px solid var(--border);
+  transition:all 0.15s;
+}
+
+.btn-ghost:hover { border-color:var(--text-mid); color:var(--text); }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  margin:64px 0;
+}
+
+.stat-item {
+  background:var(--surface);
+  padding:28px 32px;
+  text-align:center;
+}
+
+.stat-num {
+  font-family:'Syne', sans-serif;
+  font-size:2.8rem;
+  font-weight:800;
+  letter-spacing:-2px;
+  color:var(--text);
+  line-height:1;
+  margin-bottom:6px;
+}
+
+.stat-num span { color:var(--accent); }
+
+.stat-label {
+  font-family:'DM Mono', monospace;
+  font-size:0.62rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-dim);
+}
+
+/* ── CATEGORIES ── */
+.section-eyebrow {
+  font-family:'DM Mono', monospace;
+  font-size:0.62rem;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.section-eyebrow::before {
+  content:'';
+  width:16px;
+  height:1px;
+  background:var(--text-dim);
+}
+
+.section-title {
+  font-family:'Syne', sans-serif;
+  font-size:clamp(1.8rem, 4vw, 3rem);
+  font-weight:800;
+  letter-spacing:-1.5px;
+  line-height:1.05;
+  margin-bottom:48px;
+}
+
+/* Category block */
+.category-block {
+  margin-bottom:56px;
+}
+
+.category-header {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:20px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+
+.category-icon {
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.1rem;
+  flex-shrink:0;
+}
+
+.cat-finance .category-icon { background:rgba(255,77,0,0.12); }
+.cat-living .category-icon { background:rgba(0,200,150,0.1); }
+.cat-food .category-icon { background:rgba(255,214,0,0.1); }
+.cat-education .category-icon { background:rgba(100,149,255,0.1); }
+.cat-travel .category-icon { background:rgba(200,100,255,0.1); }
+.cat-health .category-icon { background:rgba(255,100,100,0.1); }
+
+.category-name {
+  font-family:'Syne', sans-serif;
+  font-size:1.1rem;
+  font-weight:700;
+  letter-spacing:-0.3px;
+}
+
+.category-count {
+  font-family:'DM Mono', monospace;
+  font-size:0.62rem;
+  letter-spacing:1px;
+  color:var(--text-dim);
+  margin-left:auto;
+}
+
+/* Tool cards grid */
+.tools-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+  gap:12px;
+}
+
+.tool-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:22px 24px;
+  text-decoration:none;
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  transition:border-color 0.2s, transform 0.2s, background 0.2s;
+  position:relative;
+  overflow:hidden;
+}
+
+.tool-card.active:hover {
+  border-color:var(--accent);
+  transform:translateY(-2px);
+  background:var(--surface2);
+}
+
+.tool-card.coming-soon {
+  opacity:0.45;
+  cursor:default;
+}
+
+.tool-card-top {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.tool-emoji { font-size:1.3rem; }
+
+.tool-badge {
+  font-family:'DM Mono', monospace;
+  font-size:0.58rem;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border-radius:4px;
+  flex-shrink:0;
+}
+
+.badge-live {
+  background:rgba(0,200,150,0.12);
+  color:var(--green);
+  border:1px solid rgba(0,200,150,0.25);
+}
+
+.badge-soon {
+  background:var(--surface2);
+  color:var(--text-dim);
+  border:1px solid var(--border);
+}
+
+.tool-name {
+  font-family:'Syne', sans-serif;
+  font-size:1rem;
+  font-weight:700;
+  letter-spacing:-0.3px;
+  line-height:1.2;
+}
+
+.tool-desc {
+  font-size:0.82rem;
+  color:var(--text-mid);
+  line-height:1.5;
+}
+
+.tool-arrow {
+  font-size:0.8rem;
+  color:var(--accent);
+  margin-top:auto;
+  font-family:'DM Mono', monospace;
+  letter-spacing:1px;
+  opacity:0;
+  transition:opacity 0.2s;
+}
+
+.tool-card.active:hover .tool-arrow { opacity:1; }
+
+/* ── WHY SECTION ── */
+.why-section {
+  padding:80px 0;
+  border-top:1px solid var(--border);
+}
+
+.why-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+  gap:24px;
+  margin-top:40px;
+}
+
+.why-card {
+  padding:28px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface);
+}
+
+.why-num {
+  font-family:'DM Mono', monospace;
+  font-size:0.65rem;
+  letter-spacing:2px;
+  color:var(--accent);
+  margin-bottom:14px;
+}
+
+.why-title {
+  font-family:'Syne', sans-serif;
+  font-size:1rem;
+  font-weight:700;
+  margin-bottom:8px;
+  letter-spacing:-0.3px;
+}
+
+.why-desc {
+  font-size:0.82rem;
+  color:var(--text-mid);
+  line-height:1.6;
+}
+
+/* ── TICKER ── */
+.ticker-wrap {
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:14px 0;
+  overflow:hidden;
+  margin:64px 0;
+}
+
+.ticker-track {
+  display:flex;
+  gap:48px;
+  animation:ticker 25s linear infinite;
+  white-space:nowrap;
+}
+
+.ticker-item {
+  font-family:'DM Mono', monospace;
+  font-size:0.72rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;
+}
+
+.ticker-dot {
+  width:4px;
+  height:4px;
+  background:var(--accent);
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+@keyframes ticker {
+  0% { transform:translateX(0); }
+  100% { transform:translateX(-50%); }
+}
+
+/* ── CTA ── */
+.cta-section {
+  padding:80px 0;
+  text-align:center;
+  border-top:1px solid var(--border);
+}
+
+.cta-title {
+  font-family:'Syne', sans-serif;
+  font-size:clamp(2rem, 5vw, 4rem);
+  font-weight:800;
+  letter-spacing:-2px;
+  line-height:1.0;
+  margin-bottom:20px;
+}
+
+.cta-sub {
+  color:var(--text-mid);
+  font-size:1rem;
+  margin-bottom:36px;
+  max-width:460px;
+  margin-left:auto;
+  margin-right:auto;
+  line-height:1.6;
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top:1px solid var(--border);
+  padding:32px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+}
+
+.footer-logo {
+  font-family:'Syne', sans-serif;
+  font-size:1rem;
+  font-weight:800;
+  color:var(--text);
+  text-decoration:none;
+  letter-spacing:-0.5px;
+}
+
+.footer-logo span { color:var(--accent); }
+
+.footer-links {
+  display:flex;
+  gap:24px;
+}
+
+.footer-links a {
+  font-family:'DM Mono', monospace;
+  font-size:0.65rem;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  text-decoration:none;
+  transition:color 0.15s;
+}
+
+.footer-links a:hover { color:var(--text); }
+
+.footer-copy {
+  font-family:'DM Mono', monospace;
+  font-size:0.62rem;
+  color:var(--text-dim);
+  letter-spacing:0.5px;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px) {
+  h1 { letter-spacing:-2px; }
+  .stats-bar { grid-template-columns:1fr; }
+  .hero { padding:60px 0 48px; }
+  .hero-bg-text { display:none; }
+  footer { flex-direction:column; align-items:flex-start; }
+}
+
+.fade-in {
+  opacity:0;
+  transform:translateY(16px);
+  animation:fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn { to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <a href="/" class="logo">costly<span>fees</span>.com</a>
+      <span class="header-tag">Free · No Signup</span>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg-text">£$€</div>
+  <div class="container">
+    <div class="hero-eyebrow">The price transparency platform</div>
+    <h1>Stop paying<br><span class="strike">hidden</span><br><span class="real">fees.</span></h1>
+    <p class="hero-desc">Every broker, bank, and service hides fees in the small print. CostlyFees shows you the real cost — instantly, for free.</p>
+    <div class="hero-actions">
+      <a href="#tools" class="btn-primary">Explore Tools →</a>
+      <a href="#why" class="btn-ghost">Why It Matters</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="container">
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num">4.8<span>%</span></div>
+      <div class="stat-label">Average bank FX markup</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">€<span>47</span></div>
+      <div class="stat-label">Avg hidden fees per stock trade</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">10<span>+</span></div>
+      <div class="stat-label">Free tools coming</div>
+    </div>
+  </div>
+</div>
+
+<!-- Ticker -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <div class="ticker-item"><span class="ticker-dot"></span>Stock Broker Fees</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Currency Exchange</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Cost of Living</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Crypto Exchange Fees</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Loan True Cost</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Medicine Prices</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Mobile Plans</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Healthcare Costs</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>University Fees</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Remittance Costs</div>
+    <!-- Duplicate for seamless loop -->
+    <div class="ticker-item"><span class="ticker-dot"></span>Stock Broker Fees</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Currency Exchange</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Cost of Living</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Crypto Exchange Fees</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Loan True Cost</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Medicine Prices</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Mobile Plans</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Healthcare Costs</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>University Fees</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Remittance Costs</div>
+  </div>
+</div>
+
+<!-- Tools -->
+<section id="tools" style="padding:0 0 80px;">
+  <div class="container">
+    <div class="section-eyebrow">All Tools</div>
+    <div class="section-title">Pick your category.</div>
+
+    <!-- Finance -->
+    <div class="category-block cat-finance">
+      <div class="category-header">
+        <div class="category-icon">💰</div>
+        <div>
+          <div class="category-name">Finance</div>
+        </div>
+        <div class="category-count">3 LIVE · 4 COMING SOON</div>
+      </div>
+      <div class="tools-grid">
+        <a href="./stockcompare/index.html" class="tool-card active">
+          <div class="tool-card-top">
+            <span class="tool-emoji">📈</span>
+            <span class="tool-badge badge-live">Live</span>
+          </div>
+          <div class="tool-name">Stock Broker Fee Comparator</div>
+          <div class="tool-desc">See the true cost of buying any stock across 8 major brokers including all hidden fees.</div>
+          <div class="tool-arrow">Use Tool →</div>
+        </a>
+        <a href="./currency-compare/index.html" class="tool-card active">
+          <div class="tool-card-top">
+            <span class="tool-emoji">💱</span>
+            <span class="tool-badge badge-live">Live</span>
+          </div>
+          <div class="tool-name">Currency Exchange Comparator</div>
+          <div class="tool-desc">Compare real exchange rates across 35 banks and providers. See exactly how much arrives.</div>
+          <div class="tool-arrow">Use Tool →</div>
+        </a>
+        <a href="./cost-of-living/index.html" class="tool-card active">
+          <div class="tool-card-top">
+            <span class="tool-emoji">🌍</span>
+            <span class="tool-badge badge-live">Live</span>
+          </div>
+          <div class="tool-name">Cost of Living by Country</div>
+          <div class="tool-desc">Real prices of everyday essentials across 195 countries. Search any country instantly.</div>
+          <div class="tool-arrow">Use Tool →</div>
+        </a>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">₿</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Crypto Exchange Fee Comparator</div>
+          <div class="tool-desc">Compare trading, withdrawal and spread fees across major crypto exchanges.</div>
+        </div>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">🏦</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Loan True Cost Calculator</div>
+          <div class="tool-desc">See the real total you'll pay back on any loan including compound interest.</div>
+        </div>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">💳</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Credit Card Hidden Fees</div>
+          <div class="tool-desc">Uncover the true annual cost of your credit card beyond the headline rate.</div>
+        </div>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">🏠</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Mortgage True Cost</div>
+          <div class="tool-desc">The real 25-year cost of your mortgage including all fees and interest.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Living -->
+    <div class="category-block cat-living">
+      <div class="category-header">
+        <div class="category-icon">🏠</div>
+        <div>
+          <div class="category-name">Living</div>
+        </div>
+        <div class="category-count">3 COMING SOON</div>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">📱</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Mobile Plan True Cost</div>
+          <div class="tool-desc">Compare what 1GB of data really costs in every country.</div>
+        </div>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">🏡</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Rent vs Buy Calculator</div>
+          <div class="tool-desc">Is buying actually cheaper? See the real 20-year comparison.</div>
+        </div>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">💡</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Utilities Cost by Country</div>
+          <div class="tool-desc">Compare electricity, water and internet costs globally.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Health -->
+    <div class="category-block cat-health">
+      <div class="category-header">
+        <div class="category-icon">🏥</div>
+        <div>
+          <div class="category-name">Health</div>
+        </div>
+        <div class="category-count">2 COMING SOON</div>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">💊</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Medicine Prices by Country</div>
+          <div class="tool-desc">Why does the same pill cost $400 in the USA and €4 in Spain? Find out.</div>
+        </div>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">🩺</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Private vs Public Healthcare</div>
+          <div class="tool-desc">Is private health insurance worth it in your country? Real numbers.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Education -->
+    <div class="category-block cat-education">
+      <div class="category-header">
+        <div class="category-icon">🎓</div>
+        <div>
+          <div class="category-name">Education</div>
+        </div>
+        <div class="category-count">2 COMING SOON</div>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">🎓</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">University Fees by Country</div>
+          <div class="tool-desc">Compare the true cost of a degree across 50 countries.</div>
+        </div>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">📚</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Student Loan True Cost</div>
+          <div class="tool-desc">What will you actually repay over 20 years? The number will shock you.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Travel -->
+    <div class="category-block cat-travel">
+      <div class="category-header">
+        <div class="category-icon">✈️</div>
+        <div>
+          <div class="category-name">Travel</div>
+        </div>
+        <div class="category-count">2 COMING SOON</div>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">🛡️</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Travel Insurance Comparator</div>
+          <div class="tool-desc">Compare real coverage vs price across major travel insurance providers.</div>
+        </div>
+        <div class="tool-card coming-soon">
+          <div class="tool-card-top">
+            <span class="tool-emoji">🛂</span>
+            <span class="tool-badge badge-soon">Coming Soon</span>
+          </div>
+          <div class="tool-name">Visa Cost by Country</div>
+          <div class="tool-desc">The true cost of visiting any country including visa, insurance and fees.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Why Section -->
+<section id="why" class="why-section">
+  <div class="container">
+    <div class="section-eyebrow">Why CostlyFees</div>
+    <div class="section-title">Hidden fees are<br>everywhere.</div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-num">01</div>
+        <div class="why-title">Banks hide their markup</div>
+        <div class="why-desc">Your bank charges up to 4.8% above the real exchange rate. They call it "our rate." We call it a hidden fee.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-num">02</div>
+        <div class="why-title">Brokers bury the spread</div>
+        <div class="why-desc">A "zero commission" broker still charges you through the spread. On a €5,000 trade that can cost €75 invisibly.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-num">03</div>
+        <div class="why-title">Remittances rob families</div>
+        <div class="why-desc">Africans sending money home lose up to 12% to fees. On €500 that's €60 gone — every single month.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-num">04</div>
+        <div class="why-title">We show the real number</div>
+        <div class="why-desc">Every tool on CostlyFees shows the true all-in cost — including fees you didn't know existed. Always free.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-title">Start saving<br>money today.</div>
+    <p class="cta-sub">All tools are completely free. No account needed. No hidden fees — we promise.</p>
+    <a href="#tools" class="btn-primary">See All Tools →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;width:100%">
+    <a href="/" class="footer-logo">costly<span>fees</span>.com</a>
+    <div class="footer-links">
+      <a href="#tools">Tools</a>
+      <a href="#why">About</a>
+      <a href="mailto:hello@costlyfees.com">Contact</a>
+    </div>
+    <div class="footer-copy">© 2025 CostlyFees · Free forever</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrueCost — Compare Real Stock Trading Costs Across Brokers</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Cabinet+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --border: #e0dbd0;
+  --accent: #1a1a2e;
+  --green: #00a86b;
+  --red: #e63946;
+  --gold: #f4a261;
+  --text: #1a1a2e;
+  --text-dim: #7a7a8a;
+  --shadow: 0 2px 20px rgba(26,26,46,0.08);
+  --shadow-lg: 0 8px 40px rgba(26,26,46,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  min-height: 100vh;
+}
+
+/* Noise texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.4;
+}
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+/* Header */
+header {
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.logo span { color: var(--green); }
+
+.header-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  background: var(--accent);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+/* Hero */
+.hero {
+  padding: 64px 0 48px;
+  max-width: 680px;
+}
+
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--green);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 1.05;
+  margin-bottom: 20px;
+}
+
+h1 em {
+  font-style: normal;
+  color: var(--green);
+  position: relative;
+}
+
+.hero-sub {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  font-weight: 500;
+  max-width: 520px;
+}
+
+/* Calculator Card */
+.calc-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 40px;
+}
+
+.calc-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 600px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .calc-card { padding: 24px; }
+}
+
+.field-group { display: flex; flex-direction: column; gap: 8px; }
+
+.field-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.field-input {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(26,26,46,0.08);
+}
+
+.stock-search-wrap { position: relative; }
+
+.stock-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  display: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.stock-suggestion {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+}
+.stock-suggestion:last-child { border-bottom: none; }
+.stock-suggestion:hover { background: var(--surface2); }
+
+.suggestion-ticker {
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.suggestion-name {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.calc-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  letter-spacing: -0.3px;
+}
+
+.calc-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(26,26,46,0.2);
+}
+
+.calc-btn:active { transform: scale(0.99); }
+
+/* Live price bar */
+.price-bar {
+  display: none;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.price-bar-stock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.price-ticker {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  background: var(--accent);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.price-name { font-weight: 700; font-size: 0.95rem; }
+
+.price-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.price-change {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+.price-change.up { background: rgba(0,168,107,0.12); color: var(--green); }
+.price-change.down { background: rgba(230,57,70,0.12); color: var(--red); }
+
+.price-source {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+/* Results */
+#results-section { display: none; }
+
+.results-header {
+  margin-bottom: 20px;
+}
+
+.results-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.results-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+/* Winner banner */
+.winner-banner {
+  background: linear-gradient(135deg, var(--green), #00c47d);
+  color: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0,168,107,0.3);
+}
+
+.winner-left { display: flex; flex-direction: column; gap: 4px; }
+.winner-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 2px; opacity: 0.8; }
+.winner-name { font-size: 1.3rem; font-weight: 900; letter-spacing: -0.5px; }
+.winner-cost { font-family: 'DM Mono', monospace; font-size: 0.85rem; opacity: 0.9; }
+
+.winner-cta {
+  background: #fff;
+  color: var(--green);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: transform 0.15s;
+  white-space: nowrap;
+}
+.winner-cta:hover { transform: scale(1.03); }
+
+/* Broker cards */
+.broker-list { display: flex; flex-direction: column; gap: 12px; }
+
+.broker-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 20px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.broker-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+  transform: translateX(3px);
+}
+
+.broker-card.best { border-color: var(--green); background: rgba(0,168,107,0.03); }
+.broker-card.best::before {
+  content: 'CHEAPEST';
+  position: absolute;
+  top: 0; right: 0;
+  background: var(--green);
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  padding: 4px 10px;
+  border-bottom-left-radius: 8px;
+  letter-spacing: 1px;
+}
+
+.broker-rank {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  width: 28px;
+  text-align: center;
+}
+
+.broker-rank.first { color: var(--green); font-weight: 700; }
+
+.broker-info { display: flex; flex-direction: column; gap: 4px; }
+
+.broker-name {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.broker-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.broker-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.broker-breakdown {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.breakdown-item {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+.broker-total {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 90px;
+}
+
+.total-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.total-amount {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.total-amount.best { color: var(--green); }
+
+.broker-cta {
+  display: none;
+}
+
+@media (max-width: 650px) {
+  .broker-card {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+  }
+  .broker-breakdown { display: none; }
+  .broker-total { text-align: left; }
+}
+
+/* Savings summary */
+.savings-box {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.savings-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.savings-amount {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.savings-note {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+/* Disclaimer */
+.disclaimer {
+  margin-top: 40px;
+  padding: 16px 20px;
+  background: var(--surface2);
+  border-radius: 10px;
+  border-left: 3px solid var(--gold);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  letter-spacing: 0.3px;
+}
+
+/* Footer */
+footer {
+  margin-top: 60px;
+  padding: 30px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+footer a { color: var(--green); text-decoration: none; }
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div style="background:#0c0c0c;border-bottom:1px solid #262626;padding:14px 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)">
+  <div style="max-width:1140px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between">
+    <a href="../index.html" style="font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:1.5px;color:#666;text-decoration:none;text-transform:uppercase;display:flex;align-items:center;gap:8px;transition:color 0.15s" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color='#666'">← Back to CostlyFees</a>
+    <a href="../index.html" style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#f0f0f0;text-decoration:none;letter-spacing:-0.5px">costly<span style="color:#ff4d00">fees</span>.com</a>
+    <div style="font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:#444;text-transform:uppercase">Free Tool</div>
+  </div>
+</div>
+<div class="container">
+  <header>
+    <a href="#" class="logo">true<span>cost</span>.io</a>
+    <span class="header-badge">FREE · NO SIGNUP</span>
+  </header>
+
+  <section class="hero">
+    <div class="hero-eyebrow">⚡ Real Cost Comparison</div>
+    <h1>Stop Paying Hidden<br>Fees On <em>Every Trade</em></h1>
+    <p class="hero-sub">Enter any stock and trade amount. We calculate the true total cost — including commissions, spreads and FX fees — across every major broker.</p>
+  </section>
+
+  <!-- Calculator -->
+  <div class="calc-card">
+    <div class="calc-title">🔍 Calculate Your True Cost</div>
+
+    <div class="calc-grid">
+      <div class="field-group">
+        <label class="field-label">Stock / ETF</label>
+        <div class="stock-search-wrap">
+          <input type="text" class="field-input" id="stock-input" placeholder="e.g. AAPL, TSLA" autocomplete="off" spellcheck="false">
+          <div class="stock-suggestions" id="stock-suggestions"></div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Amount (€/$)</label>
+        <input type="number" class="field-input" id="amount-input" placeholder="e.g. 500" min="1">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Currency</label>
+        <select class="field-input" id="currency-select">
+          <option value="EUR">🇪🇺 EUR — Euro</option>
+          <option value="USD">🇺🇸 USD — Dollar</option>
+          <option value="GBP">🇬🇧 GBP — Pound</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Live price bar -->
+    <div class="price-bar" id="price-bar">
+      <div class="price-bar-stock">
+        <span class="price-ticker" id="price-ticker">AAPL</span>
+        <span class="price-name" id="price-name">Apple Inc.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="price-value" id="price-value">$0.00</span>
+        <span class="price-change" id="price-change">+0.00%</span>
+      </div>
+      <span class="price-source">via Finnhub · 15min delay</span>
+    </div>
+
+    <button class="calc-btn" id="calc-btn" onclick="calculate()">
+      Compare All Brokers →
+    </button>
+  </div>
+
+  <!-- Results -->
+  <div id="results-section">
+    <div class="results-header">
+      <div class="results-title" id="results-title">True Cost Comparison</div>
+      <div class="results-sub" id="results-sub">Buying €500 of AAPL across 8 brokers</div>
+    </div>
+
+    <div class="winner-banner" id="winner-banner">
+      <div class="winner-left">
+        <span class="winner-label">CHEAPEST BROKER</span>
+        <span class="winner-name" id="winner-name">eToro</span>
+        <span class="winner-cost" id="winner-cost">Total cost: €500.75</span>
+      </div>
+      <a href="#" id="winner-cta" class="winner-cta" target="_blank">Open Account →</a>
+    </div>
+
+    <div class="broker-list" id="broker-list"></div>
+
+    <div class="savings-box" id="savings-box">
+      <div>
+        <div class="savings-label">POTENTIAL SAVINGS vs MOST EXPENSIVE</div>
+        <div class="savings-amount" id="savings-amount">€0.00</div>
+      </div>
+      <div class="savings-note">
+        Small differences compound significantly over hundreds of trades per year.
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ DISCLAIMER: Fee data is manually maintained and may not reflect real-time changes. Spreads are estimates and vary by market conditions. Always verify current fees on each broker's official website before trading. This is not financial advice.
+    </div>
+  </div>
+
+  <footer>
+    <span>truecost.io — Know what you're really paying</span>
+    <span>Broker links are affiliate links · <a href="#">About</a> · <a href="#">Fee Data</a></span>
+  </footer>
+</div>
+
+<script>
+// ─── BROKER DATABASE ──────────────────────────────────────────────────────────
+// All fees manually researched. Update periodically.
+const brokers = [
+  {
+    name: 'Trading 212',
+    tags: ['zero commission', 'EU regulated', 'fractional shares'],
+    commission: 0,          // flat fee per trade €
+    commissionPct: 0,       // % of trade
+    spreadPct: 0.15,        // typical spread %
+    fxFee: 0.15,            // FX conversion % (if stock in different currency)
+    minDeposit: 1,
+    url: 'https://www.trading212.com',  // replace with affiliate link
+    affLink: 'https://www.trading212.com',
+    available: ['EUR','GBP','USD'],
+  },
+  {
+    name: 'eToro',
+    tags: ['social trading', 'copy trading', 'zero commission'],
+    commission: 0,
+    commissionPct: 0,
+    spreadPct: 0.09,
+    fxFee: 1.5,
+    minDeposit: 50,
+    url: 'https://www.etoro.com',
+    affLink: 'https://www.etoro.com',
+    available: ['EUR','GBP','USD'],
+  },
+  {
+    name: 'DEGIRO',
+    tags: ['low cost', 'EU broker', 'wide selection'],
+    commission: 0,
+    commissionPct: 0,
+    spreadPct: 0.1,
+    fxFee: 0.1,
+    handlingFee: 0.50,      // per trade handling fee €
+    minDeposit: 0,
+    url: 'https://www.degiro.eu',
+    affLink: 'https://www.degiro.eu',
+    available: ['EUR','GBP'],
+  },
+  {
+    name: 'Interactive Brokers',
+    tags: ['professional', 'low margin rates', 'global'],
+    commission: 0,
+    commissionPct: 0.05,
+    spreadPct: 0.05,
+    fxFee: 0.08,
+    minCommission: 1.0,
+    minDeposit: 0,
+    url: 'https://www.interactivebrokers.com',
+    affLink: 'https://www.interactivebrokers.com',
+    available: ['EUR','GBP','USD'],
+  },
+  {
+    name: 'Revolut',
+    tags: ['banking app', 'fractional shares', 'easy setup'],
+    commission: 0,
+    commissionPct: 0,
+    spreadPct: 0.25,
+    fxFee: 0,
+    freeTradesPerMonth: 1,   // 1 free trade/month on free plan
+    extraTradeFee: 1.99,
+    minDeposit: 0,
+    url: 'https://www.revolut.com',
+    affLink: 'https://www.revolut.com',
+    available: ['EUR','GBP','USD'],
+  },
+  {
+    name: 'Saxo Bank',
+    tags: ['premium', 'advanced tools', 'wide markets'],
+    commission: 0,
+    commissionPct: 0.08,
+    spreadPct: 0.08,
+    fxFee: 0.25,
+    minCommission: 4.0,
+    minDeposit: 2000,
+    url: 'https://www.home.saxo',
+    affLink: 'https://www.home.saxo',
+    available: ['EUR','GBP','USD'],
+  },
+  {
+    name: 'XTB',
+    tags: ['zero commission', 'EU regulated', 'good platform'],
+    commission: 0,
+    commissionPct: 0,
+    spreadPct: 0.2,
+    fxFee: 0.5,
+    freeUpTo: 100000,        // free up to €100k monthly volume
+    minDeposit: 0,
+    url: 'https://www.xtb.com',
+    affLink: 'https://www.xtb.com',
+    available: ['EUR','GBP','USD'],
+  },
+  {
+    name: 'Flatex',
+    tags: ['German broker', 'regulated', 'good for EU'],
+    commission: 5.90,
+    commissionPct: 0,
+    spreadPct: 0.1,
+    fxFee: 0.9,
+    minDeposit: 0,
+    url: 'https://www.flatex.de',
+    affLink: 'https://www.flatex.de',
+    available: ['EUR'],
+  },
+];
+
+// ─── POPULAR STOCKS ───────────────────────────────────────────────────────────
+const popularStocks = [
+  { ticker: 'AAPL', name: 'Apple Inc.', currency: 'USD' },
+  { ticker: 'TSLA', name: 'Tesla Inc.', currency: 'USD' },
+  { ticker: 'MSFT', name: 'Microsoft Corp.', currency: 'USD' },
+  { ticker: 'AMZN', name: 'Amazon.com Inc.', currency: 'USD' },
+  { ticker: 'GOOGL', name: 'Alphabet Inc.', currency: 'USD' },
+  { ticker: 'NVDA', name: 'NVIDIA Corp.', currency: 'USD' },
+  { ticker: 'META', name: 'Meta Platforms', currency: 'USD' },
+  { ticker: 'NFLX', name: 'Netflix Inc.', currency: 'USD' },
+  { ticker: 'BRK.B', name: 'Berkshire Hathaway', currency: 'USD' },
+  { ticker: 'JPM', name: 'JPMorgan Chase', currency: 'USD' },
+  { ticker: 'V', name: 'Visa Inc.', currency: 'USD' },
+  { ticker: 'WMT', name: 'Walmart Inc.', currency: 'USD' },
+  { ticker: 'VOO', name: 'Vanguard S&P 500 ETF', currency: 'USD' },
+  { ticker: 'QQQ', name: 'Invesco QQQ ETF', currency: 'USD' },
+  { ticker: 'SPY', name: 'SPDR S&P 500 ETF', currency: 'USD' },
+  { ticker: 'BTC-USD', name: 'Bitcoin', currency: 'USD' },
+  { ticker: 'ETH-USD', name: 'Ethereum', currency: 'USD' },
+];
+
+// ─── STOCK SEARCH ─────────────────────────────────────────────────────────────
+const stockInput = document.getElementById('stock-input');
+const suggestionsBox = document.getElementById('stock-suggestions');
+
+stockInput.addEventListener('input', () => {
+  const val = stockInput.value.toUpperCase().trim();
+  if (!val) { suggestionsBox.style.display = 'none'; return; }
+
+  const matches = popularStocks.filter(s =>
+    s.ticker.includes(val) || s.name.toUpperCase().includes(val)
+  ).slice(0, 6);
+
+  if (matches.length === 0) { suggestionsBox.style.display = 'none'; return; }
+
+  suggestionsBox.innerHTML = matches.map(s => `
+    <div class="stock-suggestion" onclick="selectStock('${s.ticker}', '${s.name}')">
+      <span class="suggestion-ticker">${s.ticker}</span>
+      <span class="suggestion-name">${s.name}</span>
+    </div>
+  `).join('');
+  suggestionsBox.style.display = 'block';
+});
+
+function selectStock(ticker, name) {
+  stockInput.value = ticker;
+  suggestionsBox.style.display = 'none';
+  fetchPrice(ticker);
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.stock-search-wrap')) suggestionsBox.style.display = 'none';
+});
+
+stockInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') { suggestionsBox.style.display = 'none'; calculate(); }
+});
+
+// ─── LIVE PRICE FETCH ─────────────────────────────────────────────────────────
+let currentPrice = null;
+let currentTicker = null;
+
+function showPriceBar(ticker, price, prevClose, name) {
+  currentPrice = price;
+  currentTicker = ticker;
+  const change = ((price - prevClose) / prevClose * 100).toFixed(2);
+  const isUp = parseFloat(change) >= 0;
+  document.getElementById('price-ticker').textContent = ticker;
+  document.getElementById('price-name').textContent = name;
+  document.getElementById('price-value').textContent = `$${price.toFixed(2)}`;
+  document.getElementById('price-change').textContent = `${isUp ? '+' : ''}${change}%`;
+  document.getElementById('price-change').className = `price-change ${isUp ? 'up' : 'down'}`;
+  document.getElementById('price-bar').style.display = 'flex';
+  document.getElementById('price-bar').style.borderColor = isUp ? 'var(--green)' : 'var(--red)';
+}
+
+async function fetchPrice(ticker) {
+  const stockMeta = popularStocks.find(s => s.ticker === ticker) || { name: ticker };
+  const priceBar = document.getElementById('price-bar');
+
+  // Show loading state immediately
+  priceBar.style.display = 'flex';
+  document.getElementById('price-ticker').textContent = ticker;
+  document.getElementById('price-name').textContent = stockMeta.name;
+  document.getElementById('price-value').textContent = 'Loading...';
+  document.getElementById('price-change').textContent = '';
+
+  // Source 1: Finnhub (free, no key needed for basic quotes)
+  try {
+    const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=sandbox_c5i0iqaad3i9lm5u8p5g`);
+    const data = await res.json();
+    if (data.c && data.c > 0) {
+      showPriceBar(ticker, data.c, data.pc, stockMeta.name);
+      return;
+    }
+  } catch(e) {}
+
+  // Source 2: Yahoo Finance via corsproxy
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+    const parsed = await res.json();
+    const meta = parsed?.chart?.result?.[0]?.meta;
+    if (meta?.regularMarketPrice) {
+      showPriceBar(ticker, meta.regularMarketPrice, meta.chartPreviousClose, stockMeta.name);
+      return;
+    }
+  } catch(e) {}
+
+  // Source 3: Yahoo Finance via allorigins
+  try {
+    const url = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    const parsed = JSON.parse(data.contents);
+    const meta = parsed?.chart?.result?.[0]?.meta;
+    if (meta?.regularMarketPrice) {
+      showPriceBar(ticker, meta.regularMarketPrice, meta.chartPreviousClose, stockMeta.name);
+      return;
+    }
+  } catch(e) {}
+
+  // All sources failed — show message
+  document.getElementById('price-value').textContent = 'Price unavailable';
+  document.getElementById('price-source').textContent = 'Could not fetch live price — fees still calculated correctly';
+}
+
+// ─── CALCULATE ────────────────────────────────────────────────────────────────
+function calculateBrokerCost(broker, amount, currency) {
+  let cost = 0;
+
+  // Commission (flat)
+  cost += broker.commission || 0;
+
+  // Commission (percentage)
+  cost += (broker.commissionPct || 0) / 100 * amount;
+
+  // Apply minimum commission
+  if (broker.minCommission) {
+    const pctCommission = (broker.commissionPct || 0) / 100 * amount;
+    if (pctCommission < broker.minCommission && broker.commissionPct > 0) {
+      cost += broker.minCommission - pctCommission;
+    }
+  }
+
+  // Spread cost
+  cost += (broker.spreadPct || 0) / 100 * amount;
+
+  // FX fee (only if buying USD stock with EUR/GBP)
+  if (currency !== 'USD') {
+    cost += (broker.fxFee || 0) / 100 * amount;
+  }
+
+  // Handling fee
+  cost += broker.handlingFee || 0;
+
+  // Extra trade fee (e.g. Revolut after free trade)
+  if (broker.extraTradeFee && broker.freeTradesPerMonth !== undefined) {
+    cost += broker.extraTradeFee;
+  }
+
+  return Math.round(cost * 100) / 100;
+}
+
+function calculate() {
+  const ticker = stockInput.value.trim().toUpperCase();
+  const amount = parseFloat(document.getElementById('amount-input').value);
+  const currency = document.getElementById('currency-select').value;
+
+  if (!ticker) { stockInput.focus(); stockInput.style.borderColor = 'var(--red)'; setTimeout(() => stockInput.style.borderColor = '', 1500); return; }
+  if (!amount || amount <= 0) { document.getElementById('amount-input').focus(); return; }
+
+  // Fetch price in background
+  fetchPrice(ticker);
+
+  // Calculate costs for all brokers
+  const results = brokers
+    .filter(b => b.available.includes(currency))
+    .map(b => ({
+      ...b,
+      totalFee: calculateBrokerCost(b, amount, currency),
+      totalCost: amount + calculateBrokerCost(b, amount, currency),
+    }))
+    .sort((a, b) => a.totalFee - b.totalFee);
+
+  // Show results
+  document.getElementById('results-section').style.display = 'block';
+  document.getElementById('results-title').textContent = `True Cost: ${ticker}`;
+  document.getElementById('results-sub').textContent = `Buying ${currency} ${amount.toLocaleString()} across ${results.length} brokers — sorted cheapest first`;
+
+  // Winner
+  const winner = results[0];
+  document.getElementById('winner-name').textContent = winner.name;
+  document.getElementById('winner-cost').textContent = `Total fees: ${currency} ${winner.totalFee.toFixed(2)} · You pay: ${currency} ${winner.totalCost.toFixed(2)}`;
+  document.getElementById('winner-cta').href = winner.affLink;
+  document.getElementById('winner-cta').textContent = `Open ${winner.name} →`;
+
+  // Broker list
+  const list = document.getElementById('broker-list');
+  list.innerHTML = '';
+  results.forEach((b, i) => {
+    const isBest = i === 0;
+    const breakdown = buildBreakdown(b, amount, currency);
+    const card = document.createElement('div');
+    card.className = `broker-card ${isBest ? 'best' : ''} fade-in`;
+    card.style.animationDelay = `${i * 0.06}s`;
+    card.innerHTML = `
+      <div class="broker-rank ${isBest ? 'first' : ''}">#${i + 1}</div>
+      <div class="broker-info">
+        <div class="broker-name">${b.name}</div>
+        <div class="broker-tags">${b.tags.map(t => `<span class="broker-tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="broker-breakdown">${breakdown}</div>
+      <div class="broker-total">
+        <span class="total-label">TOTAL FEES</span>
+        <span class="total-amount ${isBest ? 'best' : ''}">${currency} ${b.totalFee.toFixed(2)}</span>
+      </div>
+    `;
+    card.style.cursor = 'pointer';
+    card.onclick = () => window.open(b.affLink, '_blank');
+    list.appendChild(card);
+  });
+
+  // Savings
+  const maxFee = results[results.length - 1].totalFee;
+  const minFee = results[0].totalFee;
+  const savings = maxFee - minFee;
+  document.getElementById('savings-amount').textContent = `${currency} ${savings.toFixed(2)}`;
+
+  // Scroll
+  setTimeout(() => {
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function buildBreakdown(broker, amount, currency) {
+  const items = [];
+  if (broker.commission > 0) items.push(`Flat fee: ${broker.commission.toFixed(2)}`);
+  if (broker.commissionPct > 0) items.push(`Commission: ${broker.commissionPct}%`);
+  if (broker.spreadPct > 0) items.push(`Spread: ${broker.spreadPct}%`);
+  if (broker.fxFee > 0 && currency !== 'USD') items.push(`FX fee: ${broker.fxFee}%`);
+  if (broker.handlingFee > 0) items.push(`Handling: €${broker.handlingFee}`);
+  if (broker.extraTradeFee > 0) items.push(`Trade fee: €${broker.extraTradeFee}`);
+  return items.map(i => `<div class="breakdown-item">${i}</div>`).join('');
+}
+
+// Pre-fill with AAPL example
+stockInput.value = 'AAPL';
+document.getElementById('amount-input').value = '500';
+fetchPrice('AAPL');
+</script>
+</body>
+</html>
