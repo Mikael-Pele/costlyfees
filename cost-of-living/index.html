@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrueCost — Real Prices of Everyday Essentials in Every Country</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#faf8f3; --surface:#ffffff; --surface2:#f2ede4; --border:#e8e0d0;
+  --accent:#c8622a; --accent2:#2a7c6f; --text:#1a1208; --text-dim:#8a7a62;
+  --text-mid:#4a3c28; --cheap:#2a7c6f; --expensive:#c8622a; --mid:#8a7a62;
+  --shadow:0 2px 20px rgba(26,18,8,0.07); --shadow-lg:0 8px 48px rgba(26,18,8,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.container{max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
+
+header{padding:24px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.logo{text-decoration:none;font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--text);}
+.logo span{color:var(--accent);}
+.header-tag{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:var(--text-dim);border:1px solid var(--border);padding:5px 12px;border-radius:4px;}
+
+.hero{padding:56px 0 40px;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,4rem);font-weight:900;line-height:1.05;letter-spacing:-1px;margin-bottom:16px;}
+h1 em{font-style:italic;color:var(--accent);}
+.hero-sub{color:var(--text-dim);font-size:1rem;line-height:1.7;max-width:560px;}
+
+/* Country Selector */
+.selector-card{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:32px;box-shadow:var(--shadow-lg);margin:36px 0;}
+.selector-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:20px;}
+.country-search-wrap{position:relative;margin-bottom:16px;}
+.country-search-wrap input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px 48px 14px 18px;font-family:'DM Sans',sans-serif;font-size:1rem;color:var(--text);outline:none;transition:border-color 0.2s;}
+.country-search-wrap input:focus{border-color:var(--accent);}
+.country-search-wrap input::placeholder{color:var(--text-dim);}
+.search-icon-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--accent);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:0.9rem;}
+
+.country-dropdown{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);max-height:280px;overflow-y:auto;display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:100;}
+.country-option{padding:11px 18px;cursor:pointer;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(0,0,0,0.04);transition:background 0.15s;}
+.country-option:last-child{border-bottom:none;}
+.country-option:hover{background:var(--surface2);}
+.country-option-flag{font-size:1.2rem;}
+.country-option-name{font-size:0.9rem;font-weight:500;}
+.country-option-region{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
+
+/* Selected tags */
+.selected-countries{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;min-height:20px;}
+.selected-tag{display:flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:7px 14px;border-radius:100px;font-size:0.82rem;font-weight:600;}
+.selected-tag button{background:none;border:none;color:rgba(255,255,255,0.8);cursor:pointer;font-size:1rem;line-height:1;padding:0;}
+.selected-tag button:hover{color:#fff;}
+
+/* Category tabs */
+.cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.cat-tab{font-size:0.82rem;font-weight:500;padding:8px 16px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--text-mid);cursor:pointer;transition:all 0.2s;}
+.cat-tab:hover{border-color:var(--text-mid);color:var(--text);}
+.cat-tab.active{background:var(--text);color:#fff;border-color:var(--text);}
+
+.compare-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:15px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;margin-top:20px;}
+.compare-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,98,42,0.3);}
+.compare-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* Results */
+#results-section{display:none;margin-bottom:60px;}
+.results-header{margin:40px 0 24px;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.results-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;letter-spacing:-0.5px;}
+.results-sub{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text-dim);}
+
+/* Loading state */
+.loading-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;}
+.loading-spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text-dim);letter-spacing:1px;}
+.loading-country{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:8px;}
+
+/* Country results grid */
+.countries-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
+@media(max-width:700px){.countries-results{grid-template-columns:1fr;}}
+
+.country-result-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;transition:box-shadow 0.2s;}
+.country-result-card:hover{box-shadow:var(--shadow-lg);}
+
+.result-card-header{padding:18px 22px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.result-flag-name{display:flex;align-items:center;gap:12px;}
+.result-flag{font-size:2rem;}
+.result-country-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;}
+.result-currency{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;margin-top:2px;}
+.result-index{text-align:right;}
+.result-index-val{font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:500;}
+.result-index-val.cheap{color:var(--cheap);}
+.result-index-val.mid{color:var(--mid);}
+.result-index-val.expensive{color:var(--expensive);}
+.result-index-label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;margin-top:2px;}
+
+.result-items{padding:16px 22px;}
+.result-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(0,0,0,0.04);}
+.result-item:last-child{border-bottom:none;}
+.result-item-left{display:flex;align-items:center;gap:10px;}
+.result-item-emoji{font-size:1rem;width:22px;text-align:center;}
+.result-item-name{font-size:0.82rem;color:var(--text-mid);font-weight:500;}
+.result-item-right{display:flex;align-items:center;gap:8px;}
+.result-item-price{font-family:'DM Mono',monospace;font-size:0.88rem;font-weight:500;}
+.result-item-local{font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-dim);}
+
+/* Compare table */
+.compare-table-wrap{overflow-x:auto;margin-top:32px;}
+.compare-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.compare-table th{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;}
+.compare-table td{padding:10px 14px;border-bottom:1px solid var(--border);}
+.compare-table tr:last-child td{border-bottom:none;}
+.compare-table td:first-child{font-weight:600;white-space:nowrap;}
+.price-td{font-family:'DM Mono',monospace;font-size:0.82rem;}
+.price-td.cheapest{color:var(--cheap);font-weight:700;}
+.price-td.priciest{color:var(--expensive);}
+.price-td.winner{background:rgba(42,124,111,0.06);}
+
+.note-box{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:14px 18px;margin-top:24px;font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text-dim);line-height:1.7;}
+
+footer{margin-top:60px;padding:28px 0;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text-dim);}
+footer a{color:var(--accent);text-decoration:none;}
+
+.fade-in{animation:fadeIn 0.4s ease forwards;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.error-box{background:#fff5f5;border:1px solid #fca5a5;border-radius:10px;padding:16px 20px;font-family:'DM Mono',monospace;font-size:0.75rem;color:#b91c1c;margin-top:12px;display:none;}
+</style>
+</head>
+<body>
+<div style="background:#0c0c0c;border-bottom:1px solid #262626;padding:14px 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)">
+  <div style="max-width:1140px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between">
+    <a href="../index.html" style="font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:1.5px;color:#666;text-decoration:none;text-transform:uppercase;display:flex;align-items:center;gap:8px;transition:color 0.15s" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color='#666'">← Back to CostlyFees</a>
+    <a href="../index.html" style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#f0f0f0;text-decoration:none;letter-spacing:-0.5px">costly<span style="color:#ff4d00">fees</span>.com</a>
+    <div style="font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:#444;text-transform:uppercase">Free Tool</div>
+  </div>
+</div>
+<div class="container">
+
+<header>
+  <a href="#" class="logo">true<span>cost</span>.io</a>
+  <span class="header-tag">COST OF LIVING · 195 COUNTRIES</span>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">🌍 AI-Powered · Every Country on Earth</div>
+  <h1>What Do Everyday Essentials<br>Cost in <em>Any Country?</em></h1>
+  <p class="hero-sub">Search any country in the world. Our AI instantly shows real average prices for every home essential — food, household goods, utilities and transport.</p>
+</section>
+
+<!-- Selector Card -->
+<div class="selector-card">
+  <div class="selector-title">🔍 Search Any Country</div>
+
+  <!-- Selected tags -->
+  <div class="selected-countries" id="selected-tags"></div>
+
+  <!-- Search input -->
+  <div class="country-search-wrap" id="search-wrap">
+    <input type="text" id="country-input" placeholder="Type a country name... e.g. Pakistan, Brazil, Japan" autocomplete="off" oninput="searchCountries()" onkeypress="handleKey(event)">
+    <button class="search-icon-btn" onclick="addCurrentCountry()">＋</button>
+    <div class="country-dropdown" id="country-dropdown"></div>
+  </div>
+
+  <div class="error-box" id="error-box">Please select at least one country to compare.</div>
+
+  <!-- Category tabs -->
+  <div style="margin:20px 0 8px;font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;">Select Category</div>
+  <div class="cat-tabs" id="cat-tabs">
+    <button class="cat-tab active" onclick="setCategory('essentials',this)">🛒 Daily Essentials</button>
+    <button class="cat-tab" onclick="setCategory('produce',this)">🥦 Fruit & Veg</button>
+    <button class="cat-tab" onclick="setCategory('protein',this)">🥩 Meat & Protein</button>
+    <button class="cat-tab" onclick="setCategory('dairy',this)">🥛 Dairy & Eggs</button>
+    <button class="cat-tab" onclick="setCategory('household',this)">🏠 Household</button>
+    <button class="cat-tab" onclick="setCategory('utilities',this)">💡 Utilities</button>
+    <button class="cat-tab" onclick="setCategory('transport',this)">🚌 Transport</button>
+  </div>
+
+  <button class="compare-btn" id="compare-btn" onclick="runComparison()">
+    Compare Prices →
+  </button>
+</div>
+
+<!-- Results -->
+<div id="results-section">
+  <div class="results-header">
+    <div class="results-title" id="results-title">Price Comparison</div>
+    <div class="results-sub" id="results-sub"></div>
+  </div>
+
+  <div id="loading-area"></div>
+  <div class="countries-results" id="countries-results"></div>
+  <div class="compare-table-wrap" id="compare-table-wrap" style="display:none"></div>
+
+  <div class="note-box">
+    ⚠ AI-generated prices are average estimates based on publicly available economic data. Actual prices vary by city, store, and season. Always verify locally. Prices shown in USD for comparison. Last updated: 2025.
+  </div>
+</div>
+
+<footer>
+  <span>truecost.io · AI-powered · 195 countries</span>
+  <span><a href="#">Stock Fees</a> · <a href="#">Currency Exchange</a> · <a href="#">About</a></span>
+</footer>
+</div>
+
+<script>
+// ── ALL 195 COUNTRIES ─────────────────────────────────────────────────────────
+const ALL_COUNTRIES = [
+  {name:'Afghanistan',flag:'🇦🇫',region:'Asia',currency:'AFN'},
+  {name:'Albania',flag:'🇦🇱',region:'Europe',currency:'ALL'},
+  {name:'Algeria',flag:'🇩🇿',region:'Africa',currency:'DZD'},
+  {name:'Andorra',flag:'🇦🇩',region:'Europe',currency:'EUR'},
+  {name:'Angola',flag:'🇦🇴',region:'Africa',currency:'AOA'},
+  {name:'Argentina',flag:'🇦🇷',region:'Americas',currency:'ARS'},
+  {name:'Armenia',flag:'🇦🇲',region:'Asia',currency:'AMD'},
+  {name:'Australia',flag:'🇦🇺',region:'Oceania',currency:'AUD'},
+  {name:'Austria',flag:'🇦🇹',region:'Europe',currency:'EUR'},
+  {name:'Azerbaijan',flag:'🇦🇿',region:'Asia',currency:'AZN'},
+  {name:'Bahamas',flag:'🇧🇸',region:'Americas',currency:'BSD'},
+  {name:'Bahrain',flag:'🇧🇭',region:'Asia',currency:'BHD'},
+  {name:'Bangladesh',flag:'🇧🇩',region:'Asia',currency:'BDT'},
+  {name:'Belarus',flag:'🇧🇾',region:'Europe',currency:'BYN'},
+  {name:'Belgium',flag:'🇧🇪',region:'Europe',currency:'EUR'},
+  {name:'Belize',flag:'🇧🇿',region:'Americas',currency:'BZD'},
+  {name:'Benin',flag:'🇧🇯',region:'Africa',currency:'XOF'},
+  {name:'Bolivia',flag:'🇧🇴',region:'Americas',currency:'BOB'},
+  {name:'Bosnia',flag:'🇧🇦',region:'Europe',currency:'BAM'},
+  {name:'Botswana',flag:'🇧🇼',region:'Africa',currency:'BWP'},
+  {name:'Brazil',flag:'🇧🇷',region:'Americas',currency:'BRL'},
+  {name:'Brunei',flag:'🇧🇳',region:'Asia',currency:'BND'},
+  {name:'Bulgaria',flag:'🇧🇬',region:'Europe',currency:'BGN'},
+  {name:'Burkina Faso',flag:'🇧🇫',region:'Africa',currency:'XOF'},
+  {name:'Burundi',flag:'🇧🇮',region:'Africa',currency:'BIF'},
+  {name:'Cambodia',flag:'🇰🇭',region:'Asia',currency:'KHR'},
+  {name:'Cameroon',flag:'🇨🇲',region:'Africa',currency:'XAF'},
+  {name:'Canada',flag:'🇨🇦',region:'Americas',currency:'CAD'},
+  {name:'Cape Verde',flag:'🇨🇻',region:'Africa',currency:'CVE'},
+  {name:'Central African Republic',flag:'🇨🇫',region:'Africa',currency:'XAF'},
+  {name:'Chad',flag:'🇹🇩',region:'Africa',currency:'XAF'},
+  {name:'Chile',flag:'🇨🇱',region:'Americas',currency:'CLP'},
+  {name:'China',flag:'🇨🇳',region:'Asia',currency:'CNY'},
+  {name:'Colombia',flag:'🇨🇴',region:'Americas',currency:'COP'},
+  {name:'Comoros',flag:'🇰🇲',region:'Africa',currency:'KMF'},
+  {name:'Congo',flag:'🇨🇬',region:'Africa',currency:'XAF'},
+  {name:'Costa Rica',flag:'🇨🇷',region:'Americas',currency:'CRC'},
+  {name:'Croatia',flag:'🇭🇷',region:'Europe',currency:'EUR'},
+  {name:'Cuba',flag:'🇨🇺',region:'Americas',currency:'CUP'},
+  {name:'Cyprus',flag:'🇨🇾',region:'Europe',currency:'EUR'},
+  {name:'Czech Republic',flag:'🇨🇿',region:'Europe',currency:'CZK'},
+  {name:'Denmark',flag:'🇩🇰',region:'Europe',currency:'DKK'},
+  {name:'Djibouti',flag:'🇩🇯',region:'Africa',currency:'DJF'},
+  {name:'Dominican Republic',flag:'🇩🇴',region:'Americas',currency:'DOP'},
+  {name:'DR Congo',flag:'🇨🇩',region:'Africa',currency:'CDF'},
+  {name:'Ecuador',flag:'🇪🇨',region:'Americas',currency:'USD'},
+  {name:'Egypt',flag:'🇪🇬',region:'Africa',currency:'EGP'},
+  {name:'El Salvador',flag:'🇸🇻',region:'Americas',currency:'USD'},
+  {name:'Equatorial Guinea',flag:'🇬🇶',region:'Africa',currency:'XAF'},
+  {name:'Eritrea',flag:'🇪🇷',region:'Africa',currency:'ERN'},
+  {name:'Estonia',flag:'🇪🇪',region:'Europe',currency:'EUR'},
+  {name:'Eswatini',flag:'🇸🇿',region:'Africa',currency:'SZL'},
+  {name:'Ethiopia',flag:'🇪🇹',region:'Africa',currency:'ETB'},
+  {name:'Fiji',flag:'🇫🇯',region:'Oceania',currency:'FJD'},
+  {name:'Finland',flag:'🇫🇮',region:'Europe',currency:'EUR'},
+  {name:'France',flag:'🇫🇷',region:'Europe',currency:'EUR'},
+  {name:'Gabon',flag:'🇬🇦',region:'Africa',currency:'XAF'},
+  {name:'Gambia',flag:'🇬🇲',region:'Africa',currency:'GMD'},
+  {name:'Georgia',flag:'🇬🇪',region:'Asia',currency:'GEL'},
+  {name:'Germany',flag:'🇩🇪',region:'Europe',currency:'EUR'},
+  {name:'Ghana',flag:'🇬🇭',region:'Africa',currency:'GHS'},
+  {name:'Greece',flag:'🇬🇷',region:'Europe',currency:'EUR'},
+  {name:'Guatemala',flag:'🇬🇹',region:'Americas',currency:'GTQ'},
+  {name:'Guinea',flag:'🇬🇳',region:'Africa',currency:'GNF'},
+  {name:'Haiti',flag:'🇭🇹',region:'Americas',currency:'HTG'},
+  {name:'Honduras',flag:'🇭🇳',region:'Americas',currency:'HNL'},
+  {name:'Hungary',flag:'🇭🇺',region:'Europe',currency:'HUF'},
+  {name:'Iceland',flag:'🇮🇸',region:'Europe',currency:'ISK'},
+  {name:'India',flag:'🇮🇳',region:'Asia',currency:'INR'},
+  {name:'Indonesia',flag:'🇮🇩',region:'Asia',currency:'IDR'},
+  {name:'Iran',flag:'🇮🇷',region:'Asia',currency:'IRR'},
+  {name:'Iraq',flag:'🇮🇶',region:'Asia',currency:'IQD'},
+  {name:'Ireland',flag:'🇮🇪',region:'Europe',currency:'EUR'},
+  {name:'Israel',flag:'🇮🇱',region:'Asia',currency:'ILS'},
+  {name:'Italy',flag:'🇮🇹',region:'Europe',currency:'EUR'},
+  {name:'Ivory Coast',flag:'🇨🇮',region:'Africa',currency:'XOF'},
+  {name:'Jamaica',flag:'🇯🇲',region:'Americas',currency:'JMD'},
+  {name:'Japan',flag:'🇯🇵',region:'Asia',currency:'JPY'},
+  {name:'Jordan',flag:'🇯🇴',region:'Asia',currency:'JOD'},
+  {name:'Kazakhstan',flag:'🇰🇿',region:'Asia',currency:'KZT'},
+  {name:'Kenya',flag:'🇰🇪',region:'Africa',currency:'KES'},
+  {name:'Kuwait',flag:'🇰🇼',region:'Asia',currency:'KWD'},
+  {name:'Kyrgyzstan',flag:'🇰🇬',region:'Asia',currency:'KGS'},
+  {name:'Laos',flag:'🇱🇦',region:'Asia',currency:'LAK'},
+  {name:'Latvia',flag:'🇱🇻',region:'Europe',currency:'EUR'},
+  {name:'Lebanon',flag:'🇱🇧',region:'Asia',currency:'LBP'},
+  {name:'Lesotho',flag:'🇱🇸',region:'Africa',currency:'LSL'},
+  {name:'Liberia',flag:'🇱🇷',region:'Africa',currency:'LRD'},
+  {name:'Libya',flag:'🇱🇾',region:'Africa',currency:'LYD'},
+  {name:'Lithuania',flag:'🇱🇹',region:'Europe',currency:'EUR'},
+  {name:'Luxembourg',flag:'🇱🇺',region:'Europe',currency:'EUR'},
+  {name:'Madagascar',flag:'🇲🇬',region:'Africa',currency:'MGA'},
+  {name:'Malawi',flag:'🇲🇼',region:'Africa',currency:'MWK'},
+  {name:'Malaysia',flag:'🇲🇾',region:'Asia',currency:'MYR'},
+  {name:'Maldives',flag:'🇲🇻',region:'Asia',currency:'MVR'},
+  {name:'Mali',flag:'🇲🇱',region:'Africa',currency:'XOF'},
+  {name:'Malta',flag:'🇲🇹',region:'Europe',currency:'EUR'},
+  {name:'Mauritania',flag:'🇲🇷',region:'Africa',currency:'MRU'},
+  {name:'Mauritius',flag:'🇲🇺',region:'Africa',currency:'MUR'},
+  {name:'Mexico',flag:'🇲🇽',region:'Americas',currency:'MXN'},
+  {name:'Moldova',flag:'🇲🇩',region:'Europe',currency:'MDL'},
+  {name:'Mongolia',flag:'🇲🇳',region:'Asia',currency:'MNT'},
+  {name:'Montenegro',flag:'🇲🇪',region:'Europe',currency:'EUR'},
+  {name:'Morocco',flag:'🇲🇦',region:'Africa',currency:'MAD'},
+  {name:'Mozambique',flag:'🇲🇿',region:'Africa',currency:'MZN'},
+  {name:'Myanmar',flag:'🇲🇲',region:'Asia',currency:'MMK'},
+  {name:'Namibia',flag:'🇳🇦',region:'Africa',currency:'NAD'},
+  {name:'Nepal',flag:'🇳🇵',region:'Asia',currency:'NPR'},
+  {name:'Netherlands',flag:'🇳🇱',region:'Europe',currency:'EUR'},
+  {name:'New Zealand',flag:'🇳🇿',region:'Oceania',currency:'NZD'},
+  {name:'Nicaragua',flag:'🇳🇮',region:'Americas',currency:'NIO'},
+  {name:'Niger',flag:'🇳🇪',region:'Africa',currency:'XOF'},
+  {name:'Nigeria',flag:'🇳🇬',region:'Africa',currency:'NGN'},
+  {name:'North Korea',flag:'🇰🇵',region:'Asia',currency:'KPW'},
+  {name:'North Macedonia',flag:'🇲🇰',region:'Europe',currency:'MKD'},
+  {name:'Norway',flag:'🇳🇴',region:'Europe',currency:'NOK'},
+  {name:'Oman',flag:'🇴🇲',region:'Asia',currency:'OMR'},
+  {name:'Pakistan',flag:'🇵🇰',region:'Asia',currency:'PKR'},
+  {name:'Palestine',flag:'🇵🇸',region:'Asia',currency:'ILS'},
+  {name:'Panama',flag:'🇵🇦',region:'Americas',currency:'PAB'},
+  {name:'Papua New Guinea',flag:'🇵🇬',region:'Oceania',currency:'PGK'},
+  {name:'Paraguay',flag:'🇵🇾',region:'Americas',currency:'PYG'},
+  {name:'Peru',flag:'🇵🇪',region:'Americas',currency:'PEN'},
+  {name:'Philippines',flag:'🇵🇭',region:'Asia',currency:'PHP'},
+  {name:'Poland',flag:'🇵🇱',region:'Europe',currency:'PLN'},
+  {name:'Portugal',flag:'🇵🇹',region:'Europe',currency:'EUR'},
+  {name:'Qatar',flag:'🇶🇦',region:'Asia',currency:'QAR'},
+  {name:'Romania',flag:'🇷🇴',region:'Europe',currency:'RON'},
+  {name:'Russia',flag:'🇷🇺',region:'Europe',currency:'RUB'},
+  {name:'Rwanda',flag:'🇷🇼',region:'Africa',currency:'RWF'},
+  {name:'Saudi Arabia',flag:'🇸🇦',region:'Asia',currency:'SAR'},
+  {name:'Senegal',flag:'🇸🇳',region:'Africa',currency:'XOF'},
+  {name:'Serbia',flag:'🇷🇸',region:'Europe',currency:'RSD'},
+  {name:'Sierra Leone',flag:'🇸🇱',region:'Africa',currency:'SLL'},
+  {name:'Singapore',flag:'🇸🇬',region:'Asia',currency:'SGD'},
+  {name:'Slovakia',flag:'🇸🇰',region:'Europe',currency:'EUR'},
+  {name:'Slovenia',flag:'🇸🇮',region:'Europe',currency:'EUR'},
+  {name:'Somalia',flag:'🇸🇴',region:'Africa',currency:'SOS'},
+  {name:'South Africa',flag:'🇿🇦',region:'Africa',currency:'ZAR'},
+  {name:'South Korea',flag:'🇰🇷',region:'Asia',currency:'KRW'},
+  {name:'South Sudan',flag:'🇸🇸',region:'Africa',currency:'SSP'},
+  {name:'Spain',flag:'🇪🇸',region:'Europe',currency:'EUR'},
+  {name:'Sri Lanka',flag:'🇱🇰',region:'Asia',currency:'LKR'},
+  {name:'Sudan',flag:'🇸🇩',region:'Africa',currency:'SDG'},
+  {name:'Sweden',flag:'🇸🇪',region:'Europe',currency:'SEK'},
+  {name:'Switzerland',flag:'🇨🇭',region:'Europe',currency:'CHF'},
+  {name:'Syria',flag:'🇸🇾',region:'Asia',currency:'SYP'},
+  {name:'Taiwan',flag:'🇹🇼',region:'Asia',currency:'TWD'},
+  {name:'Tajikistan',flag:'🇹🇯',region:'Asia',currency:'TJS'},
+  {name:'Tanzania',flag:'🇹🇿',region:'Africa',currency:'TZS'},
+  {name:'Thailand',flag:'🇹🇭',region:'Asia',currency:'THB'},
+  {name:'Togo',flag:'🇹🇬',region:'Africa',currency:'XOF'},
+  {name:'Trinidad and Tobago',flag:'🇹🇹',region:'Americas',currency:'TTD'},
+  {name:'Tunisia',flag:'🇹🇳',region:'Africa',currency:'TND'},
+  {name:'Turkey',flag:'🇹🇷',region:'Asia',currency:'TRY'},
+  {name:'Turkmenistan',flag:'🇹🇲',region:'Asia',currency:'TMT'},
+  {name:'Uganda',flag:'🇺🇬',region:'Africa',currency:'UGX'},
+  {name:'Ukraine',flag:'🇺🇦',region:'Europe',currency:'UAH'},
+  {name:'United Arab Emirates',flag:'🇦🇪',region:'Asia',currency:'AED'},
+  {name:'United Kingdom',flag:'🇬🇧',region:'Europe',currency:'GBP'},
+  {name:'USA',flag:'🇺🇸',region:'Americas',currency:'USD'},
+  {name:'Uruguay',flag:'🇺🇾',region:'Americas',currency:'UYU'},
+  {name:'Uzbekistan',flag:'🇺🇿',region:'Asia',currency:'UZS'},
+  {name:'Venezuela',flag:'🇻🇪',region:'Americas',currency:'VES'},
+  {name:'Vietnam',flag:'🇻🇳',region:'Asia',currency:'VND'},
+  {name:'Yemen',flag:'🇾🇪',region:'Asia',currency:'YER'},
+  {name:'Zambia',flag:'🇿🇲',region:'Africa',currency:'ZMW'},
+  {name:'Zimbabwe',flag:'🇿🇼',region:'Africa',currency:'ZWL'},
+];
+
+// ── CATEGORIES ────────────────────────────────────────────────────────────────
+const categories = {
+  essentials: [
+    {key:'water_1l',emoji:'💧',name:'Water 1.5L bottle'},
+    {key:'milk_1l',emoji:'🥛',name:'Milk 1L'},
+    {key:'bread',emoji:'🍞',name:'Bread 500g loaf'},
+    {key:'rice_1kg',emoji:'🍚',name:'Rice 1kg'},
+    {key:'eggs_12',emoji:'🥚',name:'Eggs (12)'},
+    {key:'oil_1l',emoji:'🫙',name:'Cooking oil 1L'},
+    {key:'sugar_1kg',emoji:'🍬',name:'Sugar 1kg'},
+    {key:'salt_1kg',emoji:'🧂',name:'Salt 1kg'},
+  ],
+  produce: [
+    {key:'tomatoes_1kg',emoji:'🍅',name:'Tomatoes 1kg'},
+    {key:'potatoes_1kg',emoji:'🥔',name:'Potatoes 1kg'},
+    {key:'onions_1kg',emoji:'🧅',name:'Onions 1kg'},
+    {key:'banana_1kg',emoji:'🍌',name:'Bananas 1kg'},
+    {key:'apple_1kg',emoji:'🍎',name:'Apples 1kg'},
+    {key:'orange_1kg',emoji:'🍊',name:'Oranges 1kg'},
+    {key:'cabbage_1kg',emoji:'🥬',name:'Cabbage 1kg'},
+    {key:'garlic_1kg',emoji:'🧄',name:'Garlic 1kg'},
+    {key:'carrot_1kg',emoji:'🥕',name:'Carrots 1kg'},
+    {key:'cucumber_1kg',emoji:'🥒',name:'Cucumber 1kg'},
+  ],
+  protein: [
+    {key:'chicken_1kg',emoji:'🍗',name:'Chicken breast 1kg'},
+    {key:'beef_1kg',emoji:'🥩',name:'Beef 1kg'},
+    {key:'pork_1kg',emoji:'🥓',name:'Pork 1kg'},
+    {key:'fish_1kg',emoji:'🐟',name:'Fish 1kg'},
+    {key:'beans_1kg',emoji:'🫘',name:'Dried beans 1kg'},
+    {key:'lentils_1kg',emoji:'🫘',name:'Lentils 1kg'},
+  ],
+  dairy: [
+    {key:'milk_1l',emoji:'🥛',name:'Milk 1L'},
+    {key:'eggs_12',emoji:'🥚',name:'Eggs (12)'},
+    {key:'cheese_1kg',emoji:'🧀',name:'Cheese 1kg'},
+    {key:'butter_500g',emoji:'🧈',name:'Butter 500g'},
+    {key:'yogurt_500g',emoji:'🍶',name:'Yogurt 500g'},
+  ],
+  household: [
+    {key:'toilet_paper_4',emoji:'🧻',name:'Toilet paper (4 rolls)'},
+    {key:'detergent_1kg',emoji:'🫧',name:'Laundry detergent 1kg'},
+    {key:'dish_soap',emoji:'🫧',name:'Dish soap 500ml'},
+    {key:'toothpaste',emoji:'🪥',name:'Toothpaste 100ml'},
+    {key:'shampoo',emoji:'🧴',name:'Shampoo 400ml'},
+    {key:'soap_bar',emoji:'🧼',name:'Soap bar (3 pack)'},
+    {key:'flour_1kg',emoji:'🌾',name:'Flour 1kg'},
+    {key:'coffee_250g',emoji:'☕',name:'Coffee 250g'},
+    {key:'tea_100bags',emoji:'🍵',name:'Tea 100 bags'},
+    {key:'cooking_gas',emoji:'🔥',name:'Cooking gas cylinder'},
+  ],
+  utilities: [
+    {key:'electricity_kwh',emoji:'⚡',name:'Electricity per kWh'},
+    {key:'internet_monthly',emoji:'📡',name:'Internet (monthly)'},
+    {key:'mobile_monthly',emoji:'📱',name:'Mobile plan (monthly)'},
+    {key:'water_monthly',emoji:'💧',name:'Water bill (monthly)'},
+    {key:'electricity_monthly',emoji:'💡',name:'Electricity bill (monthly avg)'},
+  ],
+  transport: [
+    {key:'bus_ticket',emoji:'🚌',name:'Local bus ticket'},
+    {key:'monthly_transit',emoji:'🚇',name:'Monthly transit pass'},
+    {key:'taxi_1km',emoji:'🚕',name:'Taxi per km'},
+    {key:'petrol_1l',emoji:'⛽',name:'Petrol 1L'},
+    {key:'uber_5km',emoji:'🚗',name:'Uber/rideshare 5km'},
+  ],
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let selectedCountries = [];
+let currentCategory = 'essentials';
+let priceCache = {};
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+function searchCountries() {
+  const val = document.getElementById('country-input').value.toLowerCase().trim();
+  const dropdown = document.getElementById('country-dropdown');
+  if (!val) { dropdown.style.display='none'; return; }
+
+  const matches = ALL_COUNTRIES.filter(c =>
+    c.name.toLowerCase().includes(val) && !selectedCountries.find(s => s.name === c.name)
+  ).slice(0, 8);
+
+  if (!matches.length) { dropdown.style.display='none'; return; }
+
+  dropdown.innerHTML = matches.map(c => `
+    <div class="country-option" onclick="addCountry('${c.name}')">
+      <span class="country-option-flag">${c.flag}</span>
+      <div>
+        <div class="country-option-name">${c.name}</div>
+        <div class="country-option-region">${c.region} · ${c.currency}</div>
+      </div>
+    </div>
+  `).join('');
+  dropdown.style.display = 'block';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter') {
+    const val = document.getElementById('country-input').value.trim();
+    const match = ALL_COUNTRIES.find(c => c.name.toLowerCase() === val.toLowerCase());
+    if (match) addCountry(match.name);
+  }
+}
+
+function addCountry(name) {
+  if (selectedCountries.find(c => c.name === name)) return;
+  if (selectedCountries.length >= 5) { alert('Maximum 5 countries at once'); return; }
+  const country = ALL_COUNTRIES.find(c => c.name === name);
+  if (!country) return;
+  selectedCountries.push(country);
+  document.getElementById('country-input').value = '';
+  document.getElementById('country-dropdown').style.display = 'none';
+  renderSelectedTags();
+}
+
+function addCurrentCountry() {
+  const val = document.getElementById('country-input').value.trim();
+  const match = ALL_COUNTRIES.find(c => c.name.toLowerCase() === val.toLowerCase());
+  if (match) addCountry(match.name);
+}
+
+function removeCountry(name) {
+  selectedCountries = selectedCountries.filter(c => c.name !== name);
+  renderSelectedTags();
+}
+
+function renderSelectedTags() {
+  const wrap = document.getElementById('selected-tags');
+  wrap.innerHTML = selectedCountries.map(c => `
+    <div class="selected-tag">
+      ${c.flag} ${c.name}
+      <button onclick="removeCountry('${c.name}')" title="Remove">×</button>
+    </div>
+  `).join('');
+}
+
+function setCategory(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#search-wrap')) {
+    document.getElementById('country-dropdown').style.display = 'none';
+  }
+});
+
+// ── AI PRICE FETCH ────────────────────────────────────────────────────────────
+async function fetchPricesForCountry(country, items) {
+  const cacheKey = `${country.name}_${currentCategory}`;
+  if (priceCache[cacheKey]) return priceCache[cacheKey];
+
+  const itemList = items.map(i => `${i.name} (key: ${i.key})`).join(', ');
+
+  const prompt = `You are a cost of living data expert. Provide realistic average retail prices in USD for ${country.name} (local currency: ${country.currency}) for the following items: ${itemList}.
+
+Return ONLY a valid JSON object with the exact keys provided, values as numbers in USD. Use real 2024-2025 data. No markdown, no explanation, just JSON.
+
+Example format: {"water_1l": 0.35, "milk_1l": 0.90, ...}`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  const data = await response.json();
+  const text = data.content?.map(b => b.text || '').join('') || '';
+
+  // Parse JSON from response
+  const clean = text.replace(/```json|```/g, '').trim();
+  const start = clean.indexOf('{');
+  const end = clean.lastIndexOf('}') + 1;
+  const prices = JSON.parse(clean.slice(start, end));
+
+  priceCache[cacheKey] = prices;
+  return prices;
+}
+
+// ── RUN COMPARISON ────────────────────────────────────────────────────────────
+async function runComparison() {
+  const errBox = document.getElementById('error-box');
+  if (selectedCountries.length === 0) {
+    errBox.style.display = 'block';
+    setTimeout(() => errBox.style.display = 'none', 3000);
+    return;
+  }
+
+  const btn = document.getElementById('compare-btn');
+  btn.disabled = true;
+  btn.textContent = 'Fetching prices...';
+
+  const items = categories[currentCategory];
+  const resultsSection = document.getElementById('results-section');
+  const loadingArea = document.getElementById('loading-area');
+  const resultsGrid = document.getElementById('countries-results');
+  const compareTableWrap = document.getElementById('compare-table-wrap');
+
+  resultsSection.style.display = 'block';
+  resultsGrid.innerHTML = '';
+  compareTableWrap.style.display = 'none';
+
+  document.getElementById('results-title').textContent = `${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} Prices`;
+  document.getElementById('results-sub').textContent = `Comparing ${selectedCountries.length} countr${selectedCountries.length === 1 ? 'y' : 'ies'} · All prices in USD`;
+
+  resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Fetch prices for all countries in parallel
+  const countryPrices = [];
+
+  for (const country of selectedCountries) {
+    // Show loading card
+    const loadId = `loading-${country.name.replace(/\s/g,'_')}`;
+    const existingCard = document.getElementById(loadId);
+    if (!existingCard) {
+      const loadCard = document.createElement('div');
+      loadCard.className = 'loading-card fade-in';
+      loadCard.id = loadId;
+      loadCard.innerHTML = `
+        <div class="loading-spinner"></div>
+        <div class="loading-country">${country.flag} ${country.name}</div>
+        <div class="loading-text">FETCHING PRICES VIA AI...</div>
+      `;
+      resultsGrid.appendChild(loadCard);
+    }
+
+    try {
+      const prices = await fetchPricesForCountry(country, items);
+      countryPrices.push({ country, prices });
+      // Replace loading card with real card
+      const loadCard = document.getElementById(loadId);
+      if (loadCard) loadCard.replaceWith(buildCountryCard(country, prices, items));
+    } catch(e) {
+      const loadCard = document.getElementById(loadId);
+      if (loadCard) {
+        loadCard.innerHTML = `<div style="color:var(--expensive);font-family:'DM Mono',monospace;font-size:0.8rem">Failed to fetch prices for ${country.name}. Please try again.</div>`;
+      }
+    }
+  }
+
+  // Show comparison table if multiple countries
+  if (countryPrices.length > 1) {
+    compareTableWrap.style.display = 'block';
+    compareTableWrap.innerHTML = buildCompareTable(countryPrices, items);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Compare Prices →';
+}
+
+// ── BUILD CARDS ───────────────────────────────────────────────────────────────
+function buildCountryCard(country, prices, items) {
+  // Cost index = sum of key basket items
+  const basket = ['water_1l','milk_1l','bread','rice_1kg','eggs_12','chicken_1kg'].filter(k => prices[k]);
+  const index = basket.reduce((s,k) => s + (prices[k]||0), 0);
+  const indexClass = index < 5 ? 'cheap' : index < 12 ? 'mid' : 'expensive';
+  const indexLabel = index < 5 ? 'Very Affordable' : index < 8 ? 'Affordable' : index < 12 ? 'Average' : index < 18 ? 'Expensive' : 'Very Expensive';
+
+  const itemsHTML = items.map(item => {
+    const p = prices[item.key];
+    return `
+      <div class="result-item">
+        <div class="result-item-left">
+          <span class="result-item-emoji">${item.emoji}</span>
+          <span class="result-item-name">${item.name}</span>
+        </div>
+        <div class="result-item-right">
+          <span class="result-item-price">${p ? '$'+p.toFixed(2) : '—'}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  const card = document.createElement('div');
+  card.className = 'country-result-card fade-in';
+  card.innerHTML = `
+    <div class="result-card-header">
+      <div class="result-flag-name">
+        <span class="result-flag">${country.flag}</span>
+        <div>
+          <div class="result-country-name">${country.name}</div>
+          <div class="result-currency">${country.region} · ${country.currency}</div>
+        </div>
+      </div>
+      <div class="result-index">
+        <div class="result-index-val ${indexClass}">$${index.toFixed(0)}</div>
+        <div class="result-index-label">${indexLabel}</div>
+      </div>
+    </div>
+    <div class="result-items">${itemsHTML}</div>
+  `;
+  return card;
+}
+
+// ── BUILD COMPARE TABLE ───────────────────────────────────────────────────────
+function buildCompareTable(countryPrices, items) {
+  let html = `
+    <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:16px">Side-by-Side Comparison</h3>
+    <div style="overflow-x:auto">
+    <table class="compare-table">
+      <thead><tr>
+        <th>Item</th>
+        ${countryPrices.map(cp => `<th>${cp.country.flag} ${cp.country.name}</th>`).join('')}
+        <th>Cheapest</th>
+      </tr></thead>
+      <tbody>`;
+
+  items.forEach(item => {
+    const vals = countryPrices.map(cp => ({ name: cp.country.name, flag: cp.country.flag, val: cp.prices[item.key] || null }));
+    const validVals = vals.filter(v => v.val !== null);
+    if (!validVals.length) return;
+    const min = Math.min(...validVals.map(v => v.val));
+    const max = Math.max(...validVals.map(v => v.val));
+    const cheapest = validVals.find(v => v.val === min);
+
+    html += `<tr>
+      <td>${item.emoji} ${item.name}</td>
+      ${vals.map(v => {
+        if (!v.val) return '<td class="price-td">—</td>';
+        const isCheap = v.val === min && validVals.length > 1;
+        const isPricey = v.val === max && validVals.length > 1;
+        return `<td class="price-td ${isCheap?'cheapest winner':''} ${isPricey?'priciest':''}">$${v.val.toFixed(2)}</td>`;
+      }).join('')}
+      <td class="price-td cheapest">${cheapest ? cheapest.flag : '—'}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  return html;
+}
+</script>
+</body>
+</html>
